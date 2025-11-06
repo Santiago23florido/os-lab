@@ -1,4 +1,6 @@
-MiniOS: A Modular Operating System Simulator in C
+
+[THREAD] Starting cooperative scheduler...
+[SECURE] Sandboxing child with SECCOMPMiniOS: A Modular Operating System Simulator in C
 
 💡 Overview
 
@@ -18,18 +20,57 @@ Memory Protection & Signal Handling: Utilizes the mprotect system call and POSIX
 
 Secure Process Sandbox: Demonstrates process isolation and inter-process communication (IPC) using pipe, fork, and seccomp to restrict a child process's access to underlying system calls.
 
-📁 Project Structure
+📁 Project Structure (Visión General en Tabla)
 
-miniOS/
-├── src/
-│ ├── fs.c / fs.h        # ROMFS parser and filesystem utilities
-│ ├── mem.c / mem.h      # Memory allocation and deallocation system
-│ ├── threads.c / threads.h  # Cooperative threading and scheduler
-│ ├── protect.c / protect.h  # Memory protection and signal handling
-│ ├── sandbox.c / sandbox.h  # Process sandboxing and IPC
-│ └── main.c             # System initialization and integration
-└── include/             # Shared header files
+El proyecto está dividido en los siguientes módulos principales, cada uno con su implementación (.c) y su interfaz (.h).
 
+Componente
+
+Archivos Principales
+
+Descripción del Módulo
+
+Core
+
+src/main.c
+
+Inicialización del sistema, integración de todos los módulos y secuencia de arranque principal.
+
+File System
+
+src/fs.c / fs.h
+
+Implementa el parser y utilidades para simular el montaje y exploración de la imagen ROMFS.
+
+Memory Manager
+
+src/mem.c / mem.h
+
+Contiene el asignador de memoria personalizado (mem_alloc/mem_free) con lógica de coalescencia.
+
+Threading
+
+src/threads.c / threads.h
+
+Lógica de context switching para el planificador de hilos cooperativos.
+
+Protection
+
+src/protect.c / protect.h
+
+Configura señales y utiliza mprotect para emular el aislamiento de memoria.
+
+Sandboxing
+
+src/sandbox.c / sandbox.h
+
+Gestión de procesos (fork), IPC (pipe) y filtros de llamadas al sistema (seccomp).
+
+Headers
+
+include/
+
+Directorio que contiene todos los archivos .h compartidos.
 
 🛠️ Build and Run
 
@@ -57,5 +98,3 @@ Expected Output
 [MEM] Heap initialized (16KB)
 [FS] Mounted ROMFS image
 [PROC] Forking sandboxed child...
-[THREAD] Starting cooperative scheduler...
-[SECURE] Sandboxing child with SECCOMP
