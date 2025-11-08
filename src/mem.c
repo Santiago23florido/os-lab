@@ -37,6 +37,15 @@
 #include <stdio.h>
 #include <errno.h>
 
+char mem[16*1024];  // real memory
+const size_t heap_size = sizeof(mem);
+const size_t header_size = sizeof(struct memblock);
+
+struct memblock memblock_object = {
+    .size = 0,
+    .next = (struct memblock*)mem
+};
+
 void coalescence(){
     struct memblock* cursor = &memblock_object;
     struct memblock* nextcursor = cursor->next;
@@ -62,7 +71,7 @@ void* memalloc(int requested_size){  //
 		errno = EINVAL;
 		return NULL;
     }
-    int required_size = requested_size + header_size;
+    size_t required_size = requested_size + header_size;
     while(nextcursor != NULL && nextcursor->size < required_size) {
         cursor = nextcursor;
         nextcursor = nextcursor->next;
@@ -80,8 +89,26 @@ void* memalloc(int requested_size){  //
     }else{
         cursor->next = nextcursor->next;
         void* allocatedmem = (char*)nextcursor + header_size;
-        return nextcursor;
+        return allocatedmem;
     }
+};
+
+void memfree(void* usedmem){
+    struct memblock* reinsert = (struct memblock*)((char*)usedmem-header_size);
+    struct memblock* cursor = &memblock_object;
+    struct memblock* nextcursor = cursor->next;
+    while(nextcursor!= NULL&&nextcursor<reinsert){
+        cursor = nextcursor;
+        nextcursor = nextcursor->next;
+    }
+    if(nextcursor==NULL){
+ 		errno = ENOMEM;
+        return;
+    }
+    cursor->next=reinsert;
+    reinsert->next = nextcursor;
+    reinsert->size = (char*)nextcursor-(char*)usedmem;
+    coalescence();
 };
 
 void meminit(){ 

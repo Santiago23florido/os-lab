@@ -12,26 +12,23 @@
 
 #ifndef MEM_H
 #define MEM_H
-#include <stddef.h>  // For size_t
+#include <stddef.h>
 
-
-static char mem[16*1024]; //HEAP declaration
-
-
-struct memblock{                  //Struct of free heap memory 
+struct memblock {
     size_t size;
     struct memblock* next;
 };
 
-struct memblock memblock_object = {     //HEAP global header
-    .size = 0,
-    .next = (struct memblock*)mem       
-};
+/* Only declarations here — no memory allocation */
+extern char mem[16*1024];
+extern struct memblock memblock_object;
+extern const size_t header_size;
+extern const size_t heap_size;
 
-const size_t header_size = sizeof(struct memblock);
-const size_t heap_size = sizeof(mem);
-void* memalloc(int requested_size);
 void meminit();
+void* memalloc(int requested_size);
+void memfree(void* usedmem);
 void coalescence();
 
-#endif /* MEM_H */
+#endif
+
