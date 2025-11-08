@@ -17,10 +17,20 @@
 
 static char mem[16*1024]; //HEAP declaration
 
-struct Allocator{                  //Heap allocator
-    char* end;
+
+struct memblock{                  //Struct of free heap memory 
+    size_t size;
+    struct memblock* next;
 };
 
-void* memalloc(size_t size);
+struct memblock memblock_object = {     //HEAP global header
+    .size = 0,
+    .next = (struct memblock*)mem       
+};
+
+const size_t header_size = sizeof(struct memblock);
+const size_t heap_size = sizeof(mem);
+void* memalloc(int size);
+void meminit();
 
 #endif /* MEM_H */

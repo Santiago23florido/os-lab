@@ -2,15 +2,13 @@
 #include <stdio.h>
 
 
-struct Allocator HeapAllocator = {
-    .end = ((char*)mem) + sizeof(mem)
+
+void* memalloc(int size){
+
 };
 
-void* memalloc(size_t size){
-    void* memr;
-    if(HeapAllocator.end-size>((char*)mem)){
-        void* memr = HeapAllocator.end-size;
-    }else{
-        printf("Not enough space in the Heap");
-    }
+void meminit(){ //Mem initial state
+    struct memblock* cursor = memblock_object.next; // cursor in heap init
+    cursor -> size = heap_size - header_size;
+    cursor -> next = NULL;
 };
