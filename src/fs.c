@@ -1,3 +1,24 @@
+/*
+ * Filesystem module for MiniOS
+ *
+ * This module implements the essential functionality required to interact
+ * with a ROMFS (Read-Only Memory File System) image:
+ *
+ *  - fs_mount():   Mapea en memoria el archivo ROMFS y verifica su formato.
+ *  - decode():     Interpreta el encabezado principal y calcula la posición 
+ *                  del primer fileheader.
+ *  - ls():         Lista secuencialmente los archivos a partir de un fileheader.
+ *  - find():       Busca recursivamente un archivo o directorio por nombre.
+ *
+ * Este código trabaja directamente sobre la imagen ROMFS en memoria, sin copiar
+ * ni transformar su contenido. Se asume que la imagen está correctamente
+ * alineada y almacenada en big-endian según la especificación de ROMFS.
+ *
+ * Autor: (tu nombre)
+ * Proyecto: MiniOS - Módulo de Filesystem
+ * Fecha: (fecha actual)
+ */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
