@@ -20,6 +20,7 @@
 #include "../include/protect.h"
 
 int main(){
+    signal(SIGSEGV, sigsegv_handler);
     meminit();
     const char *path = "tp1fs.romfs";
     fs_mount(path);

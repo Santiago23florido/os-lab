@@ -43,6 +43,7 @@ struct fileheader{
 void decode(struct fsheader *p,size_t size);
 
 void ls(struct fileheader *p,void* origin);
+void ls_wrapper();
 
 void fs_mount(const char *path);
 

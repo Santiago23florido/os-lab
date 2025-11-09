@@ -31,10 +31,13 @@
 #include <stddef.h>
 #include <string.h>
 #include "../include/fs.h"
-
+#include "../include/sandbox.h"
+#include "../include/threads.h"
+#include "../include/coroutines.h"
 
 void * orig;
 void * offsetinicial; 
+struct fileheader * location;
 
 uint32_t read32(uint8_t *p){
   uint32_t count = p[3] | (p[2] << 8) | (p[1] << 16) | (p[0] << 24);
@@ -68,6 +71,7 @@ void decode(struct fsheader *p, size_t size){
     assert(read32((uint8_t *)&p->full_size) < (uint32_t)size);
     uint32_t size_vn = mul16(strlen(&(p->volumename))+1);
     offsetinicial= (void *)(&p->volumename+size_vn);
+    location = (struct fileheader*)offsetinicial;
 }
 
 void ls(struct fileheader *p,void* origin){
@@ -80,6 +84,24 @@ void ls(struct fileheader *p,void* origin){
         p = (struct fileheader *)((char*)origin + offnxt);
     }
 }
+
+void ls_wrapper(void){
+    struct fileheader *p=location;
+    void* origin = orig;
+    while(p!= NULL){
+        printf(" %s \n",&(p->filename));
+        uint32_t offnxt = read32((uint8_t*)(&(p->nextfilehdr)))& 0xFFFFFFF0;
+        if(offnxt==0){
+            break;
+        }
+        p = (struct fileheader *)((char*)origin + offnxt);
+        yield1();
+    }
+    schedulerglobal->current->priority = 0;
+    schedulerglobal->current->state = FINISHED;
+    while(1) yield1();  
+}
+
 
 struct fileheader* find(struct fileheader *p, void* origin, char* buscado){
     while(p != NULL){
