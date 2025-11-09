@@ -41,7 +41,12 @@ struct fileheader{
 };
 
 void decode(struct fsheader *p,size_t size);
-
+void find_wrapper();
+extern char* fname;
+extern int param1;
+extern int param2;
+void addition();
+void substraction();
 void ls(struct fileheader *p,void* origin);
 void ls_wrapper();
 

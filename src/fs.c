@@ -38,6 +38,9 @@
 void * orig;
 void * offsetinicial; 
 struct fileheader * location;
+int param1=0;
+int param2=0;
+char* fname;
 
 uint32_t read32(uint8_t *p){
   uint32_t count = p[3] | (p[2] << 8) | (p[1] << 16) | (p[0] << 24);
@@ -126,5 +129,39 @@ struct fileheader* find(struct fileheader *p, void* origin, char* buscado){
     return NULL;
 }
 
+
+void find_wrapper() {
+    struct fileheader *p = location;
+    void* origin = orig;
+    char* buscado = fname;
+    struct fileheader* filep = find(p, origin, buscado);
+
+    if (filep == NULL) {
+        printf("Not found\n");
+    } else {
+        printf("Pointer found at %p\n", (void*)filep);
+    }
+    fflush(stdout);
+    schedulerglobal->current->priority = 0;
+    schedulerglobal->current->state = FINISHED;
+    while(1) yield1(); 
+}
+
+
+void addition(){
+    printf("%d \n",param1+param2);
+    fflush(stdout);
+    schedulerglobal->current->priority = 0;
+    schedulerglobal->current->state = FINISHED;
+    while(1) yield1(); 
+
+}
+void substraction(){
+    printf("%d \n",param1-param2); 
+    fflush(stdout);
+    schedulerglobal->current->priority = 0;
+    schedulerglobal->current->state = FINISHED;
+    while(1) yield1(); 
+}
 
 
