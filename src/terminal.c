@@ -6,7 +6,7 @@
 #include <ucontext.h>
 #include "../include/terminal.h"
 #include "../include/threads.h"
-
+#include "../include/sandbox.h"
 
 void init_terminal(int echo)
 {

@@ -22,8 +22,10 @@ int main(){
     meminit();
     const char *path = "tp1fs.romfs";
     fs_mount(path);
-    init_terminal(0);
     pipes_init();
     init_scheduler();
+    producer_init();
+    receiver_init();
+    enter_coroutine(schedulerglobal->coroutine);
     return 0;
 }

@@ -26,3 +26,6 @@ extern int to_parent_pipe[2];
 
 void pipes_init();
 void producer();
+void receiver();
+void producer_init();
+void receiver_init();
