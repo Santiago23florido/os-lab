@@ -1,6 +1,9 @@
 {
     "files.associations": {
         "stddef.h": "c",
-        "fs.h": "c"
+        "fs.h": "c",
+        "assert.h": "c",
+        "stdio.h": "c",
+        "termios.h": "c"
     }
 }

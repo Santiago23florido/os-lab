@@ -25,9 +25,6 @@
 #include <stddef.h>
 #include <string.h>
 
-void * orig;
-void * offsetinicial; 
-
 struct fsheader {
     const char magic[8];
     const uint32_t full_size;
