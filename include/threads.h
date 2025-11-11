@@ -25,7 +25,7 @@ struct thread{
     int id;
     coroutine_t coroutine;
     int priority;
-    enum { READY, FINISHED, EXECUTING } state;
+    enum { READY, FINISHED, EXECUTING , WAITING } state;
     struct thread* nxt;
 };
 void kill_finished_threads();

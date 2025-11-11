@@ -56,90 +56,98 @@ struct thread* sort_threads_by_priority_links(struct thread* head) {
 
 void scheduler(){
     for(;;) {
-        if(new_thread_needed!=NULL){
-            int index= get_lowest_id_below();
-            printf("index available: %d \n",index);
-            if (index!=-1){
+
+        if (new_thread_needed != NULL) {
+            int index = get_lowest_id_below();
+            if (index != -1) {
                 mprotect(stacks[index], STACK_SIZE, PROT_READ | PROT_WRITE);
-                printf("protected: %d \n",index);
-                coroutine_t new_cor = init_coroutine(stacks[index],STACK_SIZE,new_thread_needed);
-                thread_init(new_cor,index,-10);
-                new_thread_needed=NULL;
-                printf("Asignation of thread to func\n");
-                mprotect(stacks[index], STACK_SIZE,PROT_NONE);
+                coroutine_t new_cor = init_coroutine(stacks[index], STACK_SIZE, new_thread_needed);
+                thread_init(new_cor, index, -10);
+                new_thread_needed = NULL;
+                mprotect(stacks[index], STACK_SIZE, PROT_NONE);
             }
         }
 
-        if(g_sesgv==1){
+        if (g_sesgv == 1) {
             coroutine_t corout = schedulerglobal->current->coroutine;
             int prior = schedulerglobal->current->priority;
             int id = schedulerglobal->current->id;
             kill_thread(schedulerglobal->current);
-            thread_init(corout,id,prior);
-            g_sesgv=0;
+            thread_init(corout, id, prior);
+            g_sesgv = 0;
             continue;
         }
 
-        if (schedulerglobal->current && schedulerglobal->current->state == EXECUTING){
+        if (schedulerglobal->current && schedulerglobal->current->state == EXECUTING) {
             schedulerglobal->current->state = READY;
         }
 
-        if (!head_ref) {
+        if (!head_ref) continue;
+
+        kill_finished_threads();
+
+        struct thread* urg = NULL;
+        for (struct thread* t = head_ref; t; t = t->nxt) {
+            if (t->state == READY && t->priority <= -10) { urg = t; break; }
+        }
+
+        if (urg != NULL) {
+            for (struct thread* t = head_ref; t; t = t->nxt) {
+                if (t != urg && t->state == READY) t->state = WAITING;
+            }
+
+            if (head_ref != urg) {
+                struct thread* prev = NULL;
+                struct thread* cur  = head_ref;
+                while (cur && cur != urg) { prev = cur; cur = cur->nxt; }
+                if (cur) {
+                    if (prev) prev->nxt = cur->nxt;
+                    cur->nxt = head_ref;
+                    head_ref = cur;
+                }
+            }
+
+            struct thread* p = urg;
+            schedulerglobal->current = p;
+            p->state = EXECUTING;
+
+            if (p->priority > -10 && p->priority > 0) p->priority -= 1;
+
+            for (struct thread* t = head_ref; t; t = t->nxt) {
+                if (t == p) continue;
+                if (t->priority > -10) {
+                    long long inc  = (long long)t->priority;
+                    long long next = (long long)t->priority + inc;
+                    t->priority = (next > MAX_PRIORITY) ? MAX_PRIORITY : (int)next;
+                }
+            }
+
+            mprotect(stacks[p->id], STACK_SIZE, PROT_READ | PROT_WRITE);
+            mprotect(stacks[THREADLIMIT], STACK_SIZE, PROT_READ | PROT_WRITE);
+            switch_coroutine(&schedulerglobal->coroutine, p->coroutine);
+            mprotect(stacks[p->id], STACK_SIZE, PROT_NONE);
+
+            if (p->state == FINISHED) {
+                for (struct thread* t = head_ref; t; t = t->nxt) {
+                    if (t->state == WAITING) t->state = READY;
+                }
+            }
             continue;
         }
 
-        {
-            struct thread* urg = NULL;
-            for (struct thread* t = head_ref; t; t = t->nxt) {
-                if (t->state == READY && t->priority <= -10) { urg = t; break; }
-            }
-            if (urg) {
-                if (head_ref != urg) {
-                    struct thread* prev = NULL;
-                    struct thread* cur  = head_ref;
-                    while (cur && cur != urg) { prev = cur; cur = cur->nxt; }
-                    if (cur) {
-                        if (prev) prev->nxt = cur->nxt;
-                        cur->nxt = head_ref;
-                        head_ref = cur;
-                    }
-                }
-                struct thread* p = urg;
-                mprotect(stacks[p->id], STACK_SIZE, PROT_READ | PROT_WRITE);
-                mprotect(stacks[THREADLIMIT], STACK_SIZE, PROT_READ | PROT_WRITE);
-                p->state = EXECUTING;
-                if (p->priority > -10 && p->priority > 0) p->priority -= 1;
-                for (struct thread* t = head_ref; t != NULL; t = t->nxt) {
-                    if (t == p) continue;
-                    if (t->priority > -10) {
-                        long long inc  = (long long)t->priority;
-                        long long next = (long long)t->priority + inc;
-                        t->priority = (next > MAX_PRIORITY) ? MAX_PRIORITY : (int)next;
-                    }
-                }
-                schedulerglobal->current = p;
-                switch_coroutine(&schedulerglobal->coroutine, p->coroutine);
-                mprotect(stacks[p->id], STACK_SIZE, PROT_NONE);
-                continue;
-            }
+        for (struct thread* t = head_ref; t; t = t->nxt) {
+            if (t->state == WAITING) t->state = READY;
         }
-        
+
         head_ref = sort_threads_by_priority_links(head_ref);
-        kill_finished_threads();
+
         struct thread* p = head_ref;
-        mprotect(stacks[p->id], STACK_SIZE, PROT_NONE);
-        while (p && p->state != READY){
-            p = p->nxt;
-        }
-        
-        if (!p) {
-            continue;
-        }
+        while (p && p->state != READY) p = p->nxt;
+        if (!p) continue;
 
         schedulerglobal->current = p;
-        mprotect(stacks[p->id], STACK_SIZE, PROT_READ | PROT_WRITE);
-        mprotect(stacks[THREADLIMIT], STACK_SIZE, PROT_READ | PROT_WRITE);
         p->state = EXECUTING;
+
         if (p->priority > 0) p->priority -= 1;
 
         for (struct thread* t = head_ref; t != NULL; t = t->nxt) {
@@ -151,13 +159,17 @@ void scheduler(){
             }
         }
 
-        switch_coroutine(&schedulerglobal->coroutine, schedulerglobal->current->coroutine);
+        mprotect(stacks[p->id], STACK_SIZE, PROT_READ | PROT_WRITE);
+        mprotect(stacks[THREADLIMIT], STACK_SIZE, PROT_READ | PROT_WRITE);
+        switch_coroutine(&schedulerglobal->coroutine, p->coroutine);
+        mprotect(stacks[p->id], STACK_SIZE, PROT_NONE);
     }
 }
 
 
 
 void kill_thread(struct thread* t) {
+
     if (t==schedulerglobal->current){
         struct thread* nxt= schedulerglobal->current->nxt;
         schedulerglobal->current=nxt;

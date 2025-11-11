@@ -88,7 +88,7 @@ void receiver(){
             void *nlp = memchr(acc, '\n', len);
             if (!nlp) break;
             size_t linelen = (char*)nlp - acc + 1;
-            printf("Leído, desde el hijo : %.*s", (int)linelen, acc);
+            printf("Read, from son : %.*s", (int)linelen, acc);
 
             if (linelen == 3 && acc[0]=='l' && acc[1]=='s' && acc[2]=='\n') {
                 flush_stdin_nonblock();
