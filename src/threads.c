@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <signal.h>
 #include "../include/coroutines.h"
 #include "../include/threads.h"
 #include "../include/mem.h"
@@ -75,6 +76,9 @@ void scheduler(){
             kill_thread(schedulerglobal->current);
             thread_init(corout, id, prior);
             g_sesgv = 0;
+            sigset_t set;
+            sigfillset(&set);
+            sigprocmask(SIG_UNBLOCK,&set,0);
             continue;
         }
 
