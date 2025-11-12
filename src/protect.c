@@ -17,4 +17,5 @@ void sigsegv_handler(int sig){
     (void)sig;
     write(STDERR_FILENO, msg, sizeof msg - 1);
     g_sesgv=1;
+    enter_coroutine(schedulerglobal->coroutine);
 }
