@@ -2,7 +2,7 @@ TARGET = program
 CC = gcc
 CFLAGS = -Wall -Wextra -g -Iinclude -D_POSIX_C_SOURCE=200809L
 
-SRC_C = src/main.c src/mem.c src/fs.c src/sandbox.c src/protect.c src/threads.c src/coroutines.c src/terminal.c
+SRC_C = src/main.c src/mem.c src/fs.c src/sandbox.c src/protect.c src/threads.c src/coroutines.c src/terminal.c src/network.c
 SRC_S = src/coroutines-asm.s
 
 OBJ_C = $(SRC_C:.c=.o)

@@ -18,6 +18,7 @@
 #include "../include/threads.h"
 #include "../include/coroutines.h"
 #include "../include/fs.h"
+#include "../include/network.h"
 #include <errno.h>
 
 char input_buffer[BUFFER_SIZE];
@@ -113,6 +114,10 @@ void receiver(){
                     printf("activating subtraction (%d,%d)\n", param1, param2);
                     new_thread_needed = substraction;
                 }
+
+            } else if (linelen == 7 && memcmp(acc, "server\n", 7) == 0) {
+                printf("activating tcp server\n");
+                new_thread_needed = tcp_server_thread;
 
             } else if (linelen >= 5 && memcmp(acc, "find ", 5) == 0) {
                 const char* s = acc;

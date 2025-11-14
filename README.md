@@ -45,6 +45,7 @@ The kernel execution thread interprets and processes these commands:
 | `+int,int` | Adds two integers and prints the result. |
 | `-int,int` | Subtracts the second integer from the first and prints the result. |
 | `find / -name "document_name.txt"` | Performs a filesystem-level search. |
+| `server` | Launches a cooperative TCP server thread that listens on port 8888 and replies “I got your message”. |
 
 
 ## 🛠️ Build and Run
@@ -68,4 +69,3 @@ ls
 +4,7
 -10,3
 find / -name "message.txt"
-

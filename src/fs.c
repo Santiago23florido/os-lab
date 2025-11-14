@@ -163,5 +163,3 @@ void substraction(){
     schedulerglobal->current->state = FINISHED;
     while(1) yield1(); 
 }
-
-
